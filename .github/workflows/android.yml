@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download source code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Java
@@ -32,11 +32,19 @@ jobs:
       - name: Install Android SDK
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
+      - name: Extract project
+        run: |
+          mkdir extracted
+          unzip -q SuperDozvon_cloud_build_project.zip -d extracted
+
       - name: Build APK
-        run: gradle assembleDebug
+        run: |
+          PROJECT_FILE=$(find extracted -name settings.gradle.kts -print -quit)
+          PROJECT_DIR=$(dirname "$PROJECT_FILE")
+          gradle -p "$PROJECT_DIR" assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: SuperDozvon-APK
-          path: app/build/outputs/apk/debug/*.apk
+          path: extracted/**/app/build/outputs/apk/debug/*.apk
